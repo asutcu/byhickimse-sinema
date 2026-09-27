@@ -1,6 +1,15 @@
 # Dockerfile for Narratif - ByHickimse Sinema Stüdyosu
 FROM node:22-bookworm
 
+# Environment variables for build & runtime
+ENV NODE_ENV=production
+ENV PORT=3333
+ENV DATABASE_URL="file:./dev.db"
+ENV NEXT_TELEMETRY_DISABLED=1
+ENV NODE_OPTIONS="--max-old-space-size=2048"
+ENV PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1
+ENV PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=/usr/bin/chromium
+
 # Install FFmpeg and Chromium dependencies for Playwright
 RUN apt-get update && apt-get install -y \
     ffmpeg \
@@ -42,28 +51,25 @@ RUN apt-get update && apt-get install -y \
     xdg-utils \
     && rm -rf /var/lib/apt/lists/*
 
-ENV NODE_ENV=production
-ENV PORT=3333
-ENV PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1
-ENV PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=/usr/bin/chromium
-
 WORKDIR /app
 
 # Copy package files and Prisma schema
 COPY package*.json ./
 COPY prisma ./prisma/
 
-# Install dependencies and generate Prisma Client
-RUN npm ci --include=dev
-RUN npx prisma generate
+# Install dependencies
+RUN npm ci
 
 # Copy project source
 COPY . .
 
-# Build Next.js
+# Generate Prisma client and initialize SQLite database before Next.js static page generation
+RUN npx prisma generate && npx prisma db push
+
+# Build Next.js application
 RUN npm run build
 
 EXPOSE 3333
 
-# Run Prisma migrations and start server
+# Run Prisma db push and start production server
 CMD ["sh", "-c", "npx prisma db push && npm start"]
