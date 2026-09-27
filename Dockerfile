@@ -1,10 +1,11 @@
 # Dockerfile for Narratif - ByHickimse Sinema Stüdyosu
 FROM node:22-bookworm
 
-# Build-time environment variables
+# Build environment variables optimized for Render's 512MB RAM build limit
 ENV DATABASE_URL="file:./dev.db"
 ENV NEXT_TELEMETRY_DISABLED=1
-ENV NODE_OPTIONS="--max-old-space-size=2048"
+ENV NODE_OPTIONS="--max-old-space-size=450"
+ENV NEXT_BUILD_WORKERS=1
 ENV PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1
 ENV PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=/usr/bin/chromium
 
@@ -55,19 +56,19 @@ WORKDIR /app
 COPY package*.json ./
 COPY prisma ./prisma/
 
-# Install ALL dependencies (including devDependencies like typescript and tailwindcss)
-RUN npm install --include=dev
+# Install dependencies
+RUN npm ci
 
 # Copy project source code
 COPY . .
 
-# Generate Prisma Client and initialize SQLite database for static pages
+# Generate Prisma Client and initialize SQLite database
 RUN npx prisma generate && npx prisma db push
 
-# Build Next.js application
+# Build Next.js application in single-worker low-memory mode
 RUN npm run build
 
-# Set runtime environment
+# Runtime configuration
 ENV NODE_ENV=production
 ENV PORT=3333
 

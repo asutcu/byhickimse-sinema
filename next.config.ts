@@ -3,6 +3,8 @@ import path from "node:path";
 
 const nextConfig: NextConfig = {
   serverExternalPackages: ["playwright", "playwright-core", "@prisma/client", "prisma", "pino"],
+  output: "standalone",
+  productionBrowserSourceMaps: false,
   eslint: {
     ignoreDuringBuilds: true,
   },
