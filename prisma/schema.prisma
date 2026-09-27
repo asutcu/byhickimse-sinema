@@ -1,0 +1,350 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// Tekil uygulama ayarlari (her zaman id=1 olan tek satir kullanilir)
+model AppSettings {
+  id                       Int      @id @default(1)
+  openaiModel              String   @default("gpt-5")
+  openaiKeyStorageMode     String   @default("memory") // memory | encrypted
+  openaiApiKeyEncrypted    String?
+  flowUrl                  String   @default("https://labs.google/fx/tools/flow")
+  chromeProfileDir         String   @default("")
+  downloadDir              String   @default("")
+  ffmpegPath               String   @default("ffmpeg")
+  ffprobePath              String   @default("ffprobe")
+  maxRetries               Int      @default(3)
+  waitBetweenGenerationsMs Int      @default(8000)
+  generationTimeoutMs      Int      @default(420000)
+  pollIntervalMs           Int      @default(3000)
+  defaultFlowModel         String   @default("Veo 3.1 Fast")
+  defaultClipSeconds       Int      @default(8)
+  defaultAspectRatio       String   @default("16:9")
+  headless                 Boolean  @default(false)
+  slowMoMs                 Int      @default(120)
+  // Ayni anda kac projenin otomasyonu paralel calisabilir (her proje = ayri Chrome sekmesi)
+  maxParallelProjects      Int      @default(4)
+  // Konusma hizi %10 artirildi (eski: 110 / 130 / 150)
+  wpmSlow                  Int      @default(121)
+  wpmNormal                Int      @default(143)
+  wpmFast                  Int      @default(165)
+  // Model destek matrisi: { "modelAdi": { durations: [4,6,8], aspectRatios: ["16:9"], supportsReference: true, supportsAudio: true } }
+  modelSupportMatrix       String   @default("{}")
+
+  // --- Seslendirme (TTS) ---
+  // Varsayilan saglayici: google | azure | piper | elevenlabs | openai
+  ttsProvider              String   @default("google")
+  // Anahtarlar AES-256-GCM ile sifreli saklanir; istemciye asla gonderilmez.
+  googleTtsKeyEncrypted    String?
+  azureSpeechKeyEncrypted  String?
+  azureSpeechRegion        String   @default("westeurope")
+  elevenLabsKeyEncrypted   String?
+  elevenLabsVoiceId        String   @default("")
+  // Suno API (ucretli saglayici — kie.ai / sunoapi.org)
+  sunoApiKeyEncrypted      String?
+  sunoApiBaseUrl           String   @default("https://api.kie.ai")
+  sunoDefaultModel         String   @default("V4_5")
+  // Piper yerel calisir: python yolu + model klasoru
+  piperPython              String   @default("python")
+  piperModelDir            String   @default("")
+
+  createdAt                DateTime @default(now())
+  updatedAt                DateTime @updatedAt
+}
+
+model Project {
+  id                    String   @id @default(cuid())
+  name                  String
+  slug                  String   @unique
+  title                 String   @default("")
+  topic                 String   @default("")
+  genre                 String   @default("gizem")
+  targetDurationSeconds Int      @default(180)
+  storyLanguage         String   @default("Türkçe")
+  speechLanguage        String   @default("Türkçe")
+  audience              String   @default("")
+  narrationStyle        String   @default("")
+  openingHook           String   @default("")
+  avoidList             String   @default("")
+  speechPace            String   @default("normal") // slow | normal | fast
+  targetWordCount       Int      @default(0)
+  templateType          String   @default("narrator") // narrator | kids_animation | kids_song | longform | time_travel
+  // Uzun form JSON: { genreId, voiceId, ttsSpeed, ttsPitch, stillIntervalSeconds, musicEnabled, musicFileName }
+  longformSettings      String   @default("{}")
+  // Zaman Yolcusu JSON: { era, place, hostName, hostGender, hostLook, hostWardrobe, companion*, musicFileName, thumbnailText }
+  timeTravelSettings    String   @default("{}")
+  songSettings          String   @default("{}")
+  status                String   @default("draft") // draft | story_ready | clips_ready | prompts_ready | automating | rendering | completed | failed
+  // Flow uretim ayarlari
+  flowModel             String   @default("Veo 3.1 Fast")
+  // Flow gorsel modu (Nano Banana 2 / Pro) — karakter, klip karesi, kapak
+  flowImageModel        String   @default("Nano Banana 2")
+  clipSeconds           Int      @default(8)
+  aspectRatio           String   @default("16:9")
+  outputsPerGeneration  Int      @default(1)
+  audioEnabled          Boolean  @default(true)
+  useReference          Boolean  @default(true)
+  useFlowCharacter      Boolean  @default(true)
+  useStartFrame         Boolean  @default(false)
+  usePrevLastFrame      Boolean  @default(true)
+  reuseFlowProject      Boolean  @default(true)
+  flowProjectName       String   @default("")
+  // Bu projeye OZEL Flow proje adresi (or. https://labs.google/fx/tools/flow/project/<id>).
+  // Dolu ise otomasyon dogrudan bu adrese gider — isimle arama yapilmaz ve her proje
+  // kendi sekmesinde calisabilir (paralel uretim).
+  flowProjectUrl        String   @default("")
+  generateButtonMode    String   @default("auto") // auto | manual
+  automationMode        String   @default("full") // full | semi
+  promptTemplate        String   @default("") // bos ise varsayilan sablon kullanilir
+  // Video icine gomulu altyazi: false = kesinlikle yasakla (varsayilan), true = konusma dilinde iste
+  allowSubtitles        Boolean  @default(false)
+  // Cocuk animasyon / sarki klibi alanlari
+  ageBand               String   @default("") // 1-3 | 3-5 | 6-8
+  moralLesson           String   @default("")
+  visualStyle           String   @default("")
+  channelName           String   @default("")
+  episodeNumber         Int      @default(1)
+  seriesHook            String   @default("")
+  emotionCurve          String   @default("[]") // [{scene:1, emotion:-2..2, curiosity:0..10, beat:"tanisma"}]
+  // Seri / alt film: null = kok (veya bagimsiz); doluysa ayni ana karakterli alt film
+  parentProjectId       String?
+  filmIndex             Int      @default(1)
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  stories        Story[]
+  characters     CharacterProfile[]
+  clips          Clip[]
+  jobs           AutomationJob[]
+  events         AutomationEvent[]
+  assets         GeneratedAsset[]
+  promptArchives PromptArchive[]
+  parent         Project?  @relation("ProjectFilms", fields: [parentProjectId], references: [id], onDelete: Cascade)
+  films          Project[] @relation("ProjectFilms")
+
+  @@index([status])
+  @@index([createdAt])
+  @@index([parentProjectId])
+}
+
+model Story {
+  id                       String   @id @default(cuid())
+  projectId                String
+  languageVariant          String   @default("primary")
+  title                    String   @default("")
+  summary                  String   @default("")
+  hook                     String   @default("")
+  fullStory                String   @default("")
+  estimatedWords           Int      @default(0)
+  estimatedDurationSeconds Int      @default(0)
+  language                 String   @default("")
+  contentWarnings          String   @default("[]") // JSON dizi
+  characterVoiceNotes      String   @default("")
+  createdAt                DateTime @default(now())
+  updatedAt                DateTime @updatedAt
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@unique([projectId, languageVariant])
+  @@index([projectId])
+}
+
+model CharacterProfile {
+  id                    String   @id @default(cuid())
+  projectId             String
+  role                  String   @default("main") // main | side
+  name                  String   @default("")
+  age                   Int      @default(20)
+  adult                 Boolean  @default(true)
+  gender                String   @default("female") // female | male — gorunum promptunun cinsiyet ifadesini belirler
+  nationalityLook       String   @default("")
+  hair                  String   @default("")
+  faceFeatures          String   @default("")
+  makeup                String   @default("")
+  wardrobe              String   @default("")
+  bodyFraming           String   @default("")
+  sittingPose           String   @default("")
+  gestureLevel          String   @default("")
+  voiceCharacter        String   @default("")
+  emotionTone           String   @default("")
+  environment           String   @default("")
+  lighting              String   @default("")
+  cameraAngle           String   @default("")
+  lensLook              String   @default("")
+  background            String   @default("")
+  negativePrompt        String   @default("")
+  referenceImagePath    String?
+  flowCharacterReference String  @default("")
+  // Karakter Kilidi: her klipte aynen kullanilan temel prompt parcalari
+  baseAppearancePrompt  String   @default("")
+  baseWardrobePrompt    String   @default("")
+  baseEnvironmentPrompt String   @default("")
+  baseCameraPrompt      String   @default("")
+  baseVoicePrompt       String   @default("")
+  // Cocuk animasyon: DNA karti (kisilik, catchphrase, imza hareketi, palet...)
+  dnaCard               String   @default("{}")
+  imagePrompt           String   @default("")
+  imageApproved         Boolean  @default(false)
+  // Ana karakter yedek tarzlari (deniz, yagmur...); aktif referans degismez
+  styleCloset           String   @default("[]")
+  // Anlatici kadrosu: hikayedeki rolu (or. "kizi", "komsu") ve kisa tanitimi
+  storyRole             String   @default("")
+  storyNote             String   @default("")
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  clips   Clip[]
+
+  @@index([projectId, role])
+}
+
+model Clip {
+  id                       String   @id @default(cuid())
+  projectId                String
+  languageVariant          String   @default("primary")
+  index                    Int
+  dialogue                 String   @default("")
+  // narrator = anlatici kameraya konusur | cutaway = olay sahnesi + dis ses
+  shotType                 String   @default("narrator")
+  // cutaway kliplerinde sahnede gorunen kadro karakteri
+  characterId              String?
+  sceneDescription         String   @default("")
+  imagePrompt              String   @default("")
+  sceneImagePath           String?
+  emotionLabel             String   @default("")
+  curiosityScore           Int      @default(0)
+  hasHook                  Boolean  @default(false)
+  voiceTone                String   @default("")
+  prompt                   String   @default("")
+  estimatedWords           Int      @default(0)
+  estimatedDurationSeconds Float    @default(0)
+  actualDurationSeconds    Float?
+  status                   String   @default("draft")
+  attemptCount             Int      @default(0)
+  videoPath                String?
+  lastFramePath            String?
+  errorMessage             String?
+  createdAt                DateTime @default(now())
+  updatedAt                DateTime @updatedAt
+
+  project   Project           @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  character CharacterProfile? @relation(fields: [characterId], references: [id], onDelete: SetNull)
+  events    AutomationEvent[]
+  assets    GeneratedAsset[]
+
+  @@unique([projectId, languageVariant, index])
+  @@index([projectId, status])
+  @@index([characterId])
+}
+
+// Islenen promptlarin kalici arsivi: bolme/plan yenileme/varyant gibi
+// yikici islemler oncesi klip promptlari buraya kopyalanir — hicbir sey kaybolmaz.
+model PromptArchive {
+  id              String   @id @default(cuid())
+  projectId       String
+  languageVariant String   @default("primary")
+  clipIndex       Int
+  dialogue        String   @default("")
+  imagePrompt     String   @default("")
+  prompt          String   @default("")
+  sceneDescription String  @default("")
+  reason          String   @default("")
+  createdAt       DateTime @default(now())
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([projectId, createdAt])
+}
+
+model AutomationJob {
+  id              String    @id @default(cuid())
+  projectId       String
+  type            String    @default("flow_generation") // flow_generation | render
+  state           String    @default("pending")
+  mode            String    @default("full") // full | semi
+  languageVariant String    @default("primary")
+  currentClipId   String?
+  pausedReason    String?
+  errorMessage    String?
+  startedAt       DateTime?
+  finishedAt      DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  project Project           @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  events  AutomationEvent[]
+
+  @@index([projectId, state])
+  @@index([state])
+}
+
+model AutomationEvent {
+  id             Int      @id @default(autoincrement())
+  projectId      String?
+  clipId         String?
+  jobId          String?
+  level          String   @default("info") // debug | info | warning | error
+  step           String   @default("")
+  message        String
+  detail         String? // JSON
+  screenshotPath String?
+  pageUrl        String?
+  attempt        Int      @default(0)
+  createdAt      DateTime @default(now())
+
+  project Project?       @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  clip    Clip?          @relation(fields: [clipId], references: [id], onDelete: SetNull)
+  job     AutomationJob? @relation(fields: [jobId], references: [id], onDelete: SetNull)
+
+  @@index([projectId, createdAt])
+  @@index([level])
+}
+
+model FlowSelector {
+  id          Int       @id @default(autoincrement())
+  key         String    @unique
+  strategy    String    @default("css") // role | label | placeholder | text | testid | css
+  value       String    @default("")
+  roleName    String    @default("") // strategy=role icin: erisilebilir ad
+  // Dogrulanmis yedek secici zinciri (JSON): [{strategy,value,roleName}]
+  // Ilki birincil; calismazsa sonrakiler denenir ve calisan one alinir.
+  candidates  String    @default("[]")
+  description String    @default("")
+  required    Boolean   @default(true)
+  lastTestOk  Boolean?
+  lastTestAt  DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model GeneratedAsset {
+  id              String   @id @default(cuid())
+  projectId       String
+  clipId          String?
+  languageVariant String   @default("primary")
+  kind            String // clip_video | last_frame | character_image | scene_image | final_video | thumbnail | srt | publish_meta | screenshot | html_snapshot | export
+  path            String
+  bytes           Int      @default(0)
+  meta            String   @default("{}")
+  createdAt       DateTime @default(now())
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  clip    Clip?   @relation(fields: [clipId], references: [id], onDelete: SetNull)
+
+  @@index([projectId, kind])
+}
+
+model ChannelPreset {
+  id           String   @id @default(cuid())
+  name         String   @unique
+  templateType String   @default("narrator")
+  payload      String   @default("{}") // proje + karakter alanlarinin JSON kopyasi
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}

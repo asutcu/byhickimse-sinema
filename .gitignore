@@ -1,0 +1,25 @@
+node_modules/
+.next/
+out/
+dist/
+
+# Veritabani
+prisma/dev.db
+prisma/dev.db-journal
+prisma/dev.db-wal
+prisma/dev.db-shm
+
+# Ortam ve gizli anahtarlar
+.env
+config/.local-encryption-key
+
+# Uretilen proje icerikleri (yalnizca repo koku — src/app/projects UI rotasi degil)
+/projects/
+chrome-profile/
+logs/
+data/
+
+# Test / gecici
+coverage/
+*.tsbuildinfo
+next-env.d.ts

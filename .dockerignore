@@ -1,0 +1,10 @@
+node_modules
+.next
+.git
+projects
+chrome-profile
+logs
+data
+coverage
+*.log
+.env

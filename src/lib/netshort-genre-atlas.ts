@@ -1,0 +1,516 @@
+/**
+ * NetShort all-plots atlas — tur bazli duygu / dusunce / merdiven.
+ * Kaynak: https://netshort.com/tr/drama/all-plots (sayfa 1-12, ~288 dizi + 60 ozet).
+ * Hikaye uretirken: tur kilidine + bu atlasa bak; baslik/isim CALMA, ruhu yaz.
+ */
+
+export interface NetShortGenreProfile {
+  /** NetShort etiket adi */
+  id: string;
+  /** Izleyicinin hissettigi duygu */
+  emotions: string[];
+  /** Kahramanin ic monolog / dusunce tonu */
+  thoughts: string[];
+  /** Tipik merdiven (kisa) */
+  ladder: string;
+  /** Gorsel / sahne ipucu */
+  visuals: string[];
+  /** Bizim uretimde oncelik (1 yuksek) */
+  priority: 1 | 2 | 3;
+  /** 18+ yetiskin filmlerimiz icin guvenli mi */
+  adultSafe: boolean;
+}
+
+/** Ana tur profilleri — all-plots filtrelerinden + ozetlerden. */
+export const NETSHORT_GENRE_ATLAS: readonly NetShortGenreProfile[] = [
+  {
+    id: "Hesap Sorma",
+    emotions: ["ezilme otesi", "sakin ofke", "adil zafer aciligi", "tatmin"],
+    thoughts: ["Kalem kalem odeyeceksin.", "Herkesin onunde hesap soracagim.", "Iyiligimi gasbettiniz — bitti."],
+    ladder: "iyilik/gasip → asagilanma → sessiz birikim → ifsa/hesap → pismanlik",
+    visuals: ["delil masasi", "toplanti salonu", "kamu ifsasi", "eski dostun yuzu dusmesi"],
+    priority: 1,
+    adultSafe: true,
+  },
+  {
+    id: "Zorlu Geri Kazanış",
+    emotions: ["kayip acisi", "gurur kirilmasi", "donus hevesi", "bitmek bilmeyen yalvarma vs sogukluk"],
+    thoughts: ["Seni geri istemiyorum.", "Simdi de mi pisman?", "Geri getiremezsin."],
+    ladder: "ihanet/terk → kahraman yeni hayata → eski taraf yalvarir → soguk red veya secim",
+    visuals: ["yeni ask kolunda", "eski es kapida", "dugun flashback", "yalvaran eller"],
+    priority: 1,
+    adultSafe: true,
+  },
+  {
+    id: "Güçlü Dönüş",
+    emotions: ["asagilanma", "gizli guc", "status sokü", "zafer gulumseme"],
+    thoughts: ["Beni kim sandiginizi gordunuz.", "Maskeyi yirtiyorum.", "Artik ayni degilim."],
+    ladder: "hor gorulme → gizli guclenme → maske yirtma → herkes susturur",
+    visuals: ["eski tulum vs takım elbise", "manset isigi", "salon girisi", "diz cokme"],
+    priority: 1,
+    adultSafe: true,
+  },
+  {
+    id: "İntikam",
+    emotions: ["kin", "kontrollu intikam tatmini", "pişmanlik seyri"],
+    thoughts: ["Acele etmeyecegim.", "Ayni silahla vuracagim.", "Agamanin faydasi yok."],
+    ladder: "ihanet → plan → tuzak → ifsa/ceza → kapanis",
+    visuals: ["tuzak mekani", "kayit ekrani (okunur yazi yok)", "karsi tarafin cokusü"],
+    priority: 1,
+    adultSafe: true,
+  },
+  {
+    id: "Pişmanlık",
+    emotions: ["gec kalmis ask", "yalvarma", "kahramanin soguklugu", "izleyici tatmini"],
+    thoughts: ["Neden o zaman gormedim?", "Bir sans daha ver.", "Cok gec."],
+    ladder: "ihanet → kahraman uzaklasir → pismanlik artar → yalvarma → red/kisitli kapanis",
+    visuals: ["yagmurlu araba", "kapida bekleyis", "telefon cevapsiz", "yeni hayat penceresi"],
+    priority: 1,
+    adultSafe: true,
+  },
+  {
+    id: "Gizli Kimlik",
+    emotions: ["cift hayat gerilimi", "asagilanirken iceriden guc", "acilis soku"],
+    thoughts: ["Kim oldugumu bilmiyorsun.", "Bu hakaretler kayda girecek.", "Yarin mansettesin."],
+    ladder: "kimlik saklama → hor gorulme → kriz → kimlik acilir → status cevirisi",
+    visuals: ["temizlikci/fakir kiyafet ↔ CEO salonu", "yuzuk/mühür", "korumalar ani"],
+    priority: 1,
+    adultSafe: true,
+  },
+  {
+    id: "Modern Aşk",
+    emotions: ["yakinlasma", "ihanet yarasi", "secim gerilimi", "soguk netlik"],
+    thoughts: ["Bunu hak etmiyordum.", "Artik baska biri var.", "Kalbi mi yok yoksa gururu mu?"],
+    ladder: "yakinlik → darbe (ihanet/tercih) → mesafe → donus veya kopus",
+    visuals: ["sehir gecesi", "ofis", "luks araba", "kafe / magaza cikis"],
+    priority: 1,
+    adultSafe: true,
+  },
+  {
+    id: "Aşk ve Evlilik",
+    emotions: ["ev icinde soguma", "tercih yarasi", "bosanma karari", "pismanlik"],
+    thoughts: ["Evimiz bir sahneymi.", "Bosanmak istiyorum.", "Bu bebek senin degil."],
+    ladder: "mutlu flashback → tercih/ihanet → sakin yikici karar → yillar sonra donus",
+    visuals: ["dugun ↔ soguk mutfak", "bosanma kagidi", "sekreter ofisi"],
+    priority: 1,
+    adultSafe: true,
+  },
+  {
+    id: "Sözleşmeli Aşk",
+    emotions: ["mesafe", "beklenmedik bag", "kontrat vs kalp", "status surprizi"],
+    thoughts: ["Bu sadece sozlesme.", "Sen ciddi mi hissediyorsun?", "Para bitti, ask mi kaldi?"],
+    ladder: "anlasma → birlikte yasam → kriz/eski sevgili → sozlesme yirtma veya ask",
+    visuals: ["imza masasi", "ayri yatak odalari (kiyafetli)", "servet ifsasi"],
+    priority: 1,
+    adultSafe: true,
+  },
+  {
+    id: "Önce Evlilik Sonra Aşk",
+    emotions: ["zoraki yakinlik", "buz erimesi", "koruma", "gec ask"],
+    thoughts: ["Bunu istemedim ama...", "Neden beni koruyor?", "Sozlesme artik yetmiyor."],
+    ladder: "zorla/ani evlilik → mesafe → tehdit → bag → secim",
+    visuals: ["nikah dairesi", "paylasilan ev", "koruma sahnesi"],
+    priority: 2,
+    adultSafe: true,
+  },
+  {
+    id: "Zoraki Aşk",
+    emotions: ["direnis", "cekim", "nefret-ask", "teslimiyet korkusu"],
+    thoughts: ["Senden nefret ediyorum.", "Neden kalbim hizlaniyor?", "Bu bir tuzak."],
+    ladder: "zorlama/düsmanlik → cekim → kriz → secim",
+    visuals: ["yuz yuze gerilim", "kapi oni", "zoraki dans/yemek"],
+    priority: 2,
+    adultSafe: true,
+  },
+  {
+    id: "Düşmandan Aşka",
+    emotions: ["kitlenme", "alay", "yavas erime", "itiraf korkusu"],
+    thoughts: ["En buyuk rakibimsin.", "Bu bakis nedir?", "Kaybedersem asktan mi?"],
+    ladder: "dusmanlik → zorunlu ortaklik → cekim → itiraf",
+    visuals: ["ofis karsi karsiya", "tartisma", "ani yakinlik"],
+    priority: 2,
+    adultSafe: true,
+  },
+  {
+    id: "Aşk Üçgeni",
+    emotions: ["kiskanclik", "tercih acisi", "ikilem", "kirilma"],
+    thoughts: ["Neden o?", "Ikisi de beni yiyor.", "Secmek zorundayim."],
+    ladder: "iki bag → tercih sahnesi → yara → karar",
+    visuals: ["uc kisi ayni mekanda", "camdan bakıs", "el ele baska biriyle"],
+    priority: 1,
+    adultSafe: true,
+  },
+  {
+    id: "Tek Gecelik Aşk",
+    emotions: ["utanc", "beklenmedik bag", "skandal riski", "gercek duygu"],
+    thoughts: ["Bu bir hataydi.", "Neden unutamiyorum?", "Isimler degisti, his ayni."],
+    ladder: "ani yakinlik → sabah sonrasi → kacis → yeniden karsilasma → hesap",
+    visuals: ["otel lobisi (kiyafetli)", "sabah kacisi", "ofiste yuzlesme"],
+    priority: 2,
+    adultSafe: true,
+  },
+  {
+    id: "Yıldırım Nikahı",
+    emotions: ["sok", "pratiklik", "sonra ask veya savas"],
+    thoughts: ["Bu kadar hizli mi?", "Sadece kagit.", "Simdi gercek mi oldu?"],
+    ladder: "ani nikah → ev hayati → dis baski → bag veya bosanma",
+    visuals: ["nikah dairesi", "tek yuzuk", "aile baskisi"],
+    priority: 2,
+    adultSafe: true,
+  },
+  {
+    id: "Zengin Aile Dramı",
+    emotions: ["hor gorme", "servet baskisi", "damat/gelin ezilmesi", "gizli fedakarlik"],
+    thoughts: ["Onlara yetmiyorum.", "Her seyi verdim, yine de kirildim.", "Bu aile beni yedi."],
+    ladder: "aileye giris → ezilme → gizli fedakarlik → ifsa → status/ayrilis",
+    visuals: ["konak sofrasi", "asagilayan bakislar", "gizli ofis isi"],
+    priority: 1,
+    adultSafe: true,
+  },
+  {
+    id: "Aile Dramı",
+    emotions: ["ihanet", "sir", "bag kopmasi", "hesap"],
+    thoughts: ["Ailemi sandigim sey yalandi.", "Kan yetmez.", "Kapıyı kapatiyorum."],
+    ladder: "sir acilir → yuzlesme → kopus → yeni sinir",
+    visuals: ["sofra sustugu an", "eski foto", "kapi carpma"],
+    priority: 1,
+    adultSafe: true,
+  },
+  {
+    id: "Aile Bağı",
+    emotions: ["koruma", "kayip", "fedakarlik", "yeniden kavusma veya intikam"],
+    thoughts: ["Onlari koruyacagim.", "Beni sattilar.", "Cocugum / kardesim icin."],
+    ladder: "tehdit → fedakarlik → ihanet veya kavusma → karar",
+    visuals: ["hastane (yetiskin)", "aile fotografi", "koruma sahnesi"],
+    priority: 2,
+    adultSafe: true,
+  },
+  {
+    id: "Beklenmedik Dönüş",
+    emotions: ["sok", "taninamama", "eski yaralar", "status flip"],
+    thoughts: ["O muydu?", "Nasil bu kadar degisti?", "Simdi ne diyeceksiniz?"],
+    ladder: "kaybolma/asagilanma → yillar → beklenmedik donus → yuzlesme",
+    visuals: ["havaalani", "manset", "eski mahalle vs yeni stil"],
+    priority: 1,
+    adultSafe: true,
+  },
+  {
+    id: "Yeniden Doğuş",
+    emotions: ["ikinci sans aciligi", "onceki hayatin kin'i", "planli intikam"],
+    thoughts: ["Bu kez bilerek oynayacagim.", "Ayni hatayi yapmayacagim.", "Once gurur, sonra ask."],
+    ladder: "olum/yikim → uyanis → eski dusmanlari alt etme → yeni denge",
+    visuals: ["uyanma ani", "takvim/zaman", "eski sahnenin tekrari ama tersi"],
+    priority: 2,
+    adultSafe: true,
+  },
+  {
+    id: "Diriliş ve Zafer",
+    emotions: ["coküs", "yeniden ayaga kalkis", "zafer gururu"],
+    thoughts: ["Beni gomduklerini sandilar.", "Simdi tahttayim.", "Kimse diz cokturmeyecek."],
+    ladder: "ihanet/infaz → hayatta kalma → egitim/guc → zafer donusu",
+    visuals: ["infaz alani flashback", "egitim", "zafer sahnesi"],
+    priority: 2,
+    adultSafe: true,
+  },
+  {
+    id: "Güçlenme ve İntikam",
+    emotions: ["ezik baslangic", "gizli seviye", "intikam aciligi"],
+    thoughts: ["Beni kaybeden sandiniz.", "Seviyem SSS.", "Sira sizde."],
+    ladder: "asagilanma → gizli uyanis → gosteris → hesap",
+    visuals: ["varoş vs guc efekti (abartisiz)", "rakip diz cokme"],
+    priority: 2,
+    adultSafe: true,
+  },
+  {
+    id: "Kadın Gelişimi",
+    emotions: ["ozguven yukselisi", "kopus", "bagimsizlik zaferi"],
+    thoughts: ["Artik kimseye yaslanmayacagim.", "Kendi adima yasiyorum.", "Siz olmadan da olur."],
+    ladder: "bagimlilik/ezilme → uyanis → beceri/para → bagimsiz donus",
+    visuals: ["yeni is", "yeni stil", "eski cevrenin sasirmasi"],
+    priority: 1,
+    adultSafe: true,
+  },
+  {
+    id: "Ofis Romantizmi",
+    emotions: ["yasak gerilim", "rekabet", "skandal korkusu"],
+    thoughts: ["Bu is yeri.", "Neden odaya girdiginde nefesim kesiliyor?", "Biri gorurse?"],
+    ladder: "is yakinligi → cekim → engel → secim",
+    visuals: ["asansor", "gece ofis", "toplanti sonrasi"],
+    priority: 2,
+    adultSafe: true,
+  },
+  {
+    id: "Ofis Aksiyon",
+    emotions: ["ihanet ofkesi", "is savasi", "hesap sorma"],
+    thoughts: ["Sirketimi caldin.", "Imzayi sildim.", "Yatirimci masasinda gorusuruz."],
+    ladder: "is ihaneti → dusus → delil → ofis ifsasi",
+    visuals: ["ofis kapi", "sunum ekrani", "imza dosyasi"],
+    priority: 1,
+    adultSafe: true,
+  },
+  {
+    id: "Kariyer Yaşamı",
+    emotions: ["ambition", "fedakarlik", "ask vs kariyer"],
+    thoughts: ["Bu terfi benim.", "Ask yuzunden mi kaybettim?", "Ikisini de istiyorum."],
+    ladder: "hedef → engel/ihanet → secim → zafer veya bedel",
+    visuals: ["ofis gece", "sunum", "rakipler"],
+    priority: 2,
+    adultSafe: true,
+  },
+  {
+    id: "Şehir Yaşamı",
+    emotions: ["yalnizlik", "hiz", "luks bosluk", "ani bag"],
+    thoughts: ["Bu sehir yutuyor.", "Kimse gercek degil.", "Bir yuz yeter."],
+    ladder: "sehir yalnizligi → karsilasma → kriz → karar",
+    visuals: ["gece silueti", "metro/araba", "penthouse"],
+    priority: 2,
+    adultSafe: true,
+  },
+  {
+    id: "Kırsal Yaşam",
+    emotions: ["nankorluk yarasi", "emek", "dogal adalet"],
+    thoughts: ["Benim icin calistim, beni ezdiler.", "Sel gelecek.", "Hesap dogadan gelir."],
+    ladder: "emek → nankorluk → felaket/uyari → hesap",
+    visuals: ["koy", "set/tarla", "ev gasbi"],
+    priority: 2,
+    adultSafe: true,
+  },
+  {
+    id: "Servet ve Başarı",
+    emotions: ["emek gururu", "iftira yarasi", "basariyla donus"],
+    thoughts: ["Alnimin terini caldiniz.", "Simdi param var.", "Koyune hesabi soracagim."],
+    ladder: "emek → iftira → basari → donus ifsasi",
+    visuals: ["santiye", "soylenti", "yeni araba donusu"],
+    priority: 2,
+    adultSafe: true,
+  },
+  {
+    id: "Servet Mücadelesi",
+    emotions: ["miras gerilimi", "komplo", "koltuk savasi"],
+    thoughts: ["Bu sirket benim hakkim.", "Uvey kardes oyunu bozacak.", "Hissedarlar beni sececek."],
+    ladder: "miras → entrika → delil → koltuk",
+    visuals: ["yönetim kurulu", "hisse kagidi", "avukat"],
+    priority: 1,
+    adultSafe: true,
+  },
+  {
+    id: "Yasal Adalet",
+    emotions: ["haksizlik ofkesi", "delil tatmini", "temiz zafer"],
+    thoughts: ["Yasa benim silahim.", "Kumpasi bozacagim.", "Mahkeme degil, gercek yetti."],
+    ladder: "kumpas → dusus → delil → adalet anı",
+    visuals: ["karakol/mahkeme koridoru", "belge", "tutuklama ani (sansursuz siddet yok)"],
+    priority: 2,
+    adultSafe: true,
+  },
+  {
+    id: "Trajik Aşk",
+    emotions: ["kirilma", "kader", "veda acisi"],
+    thoughts: ["Seni sevmek yetmedi.", "Zaman bizi ezdi.", "Son bakis yeter."],
+    ladder: "ask → engel → kayip → yas / karar",
+    visuals: ["veda", "mektup", "bos sandalye"],
+    priority: 2,
+    adultSafe: true,
+  },
+  {
+    id: "Karşılıklı Aşk",
+    emotions: ["sicaklik", "guven", "hafif gerilim"],
+    thoughts: ["Beni oldugum gibi goruyor.", "Bu sefer gercek.", "Korkuyorum ama kaliyorum."],
+    ladder: "yakinlasma → engel → itiraf → birlik",
+    visuals: ["goz temasi", "ortak rutin", "kucuk jest"],
+    priority: 3,
+    adultSafe: true,
+  },
+  {
+    id: "İlk Görüşte Aşk",
+    emotions: ["ani cekim", "sasirma", "acele kalp"],
+    thoughts: ["Kim bu?", "Neden unutamiyorum?", "Bir daha gormeliyim."],
+    ladder: "ani bakis → kovalama/kacinma → bag → kriz",
+    visuals: ["kalabalikta goz", "kahve", "kazaani karsilasma"],
+    priority: 3,
+    adultSafe: true,
+  },
+  {
+    id: "Yaş Farklı Aşk",
+    emotions: ["yargi korkusu", "koruma", "olgun cekim"],
+    thoughts: ["Yas farki var ama...", "Beni cocuk yerine koyma.", "Bu iliskiye deger."],
+    ladder: "cekım → toplum baskisi → karar",
+    visuals: ["restoran", "dedikodu bakislari", "el ele meydan okuma"],
+    priority: 2,
+    adultSafe: true,
+  },
+  {
+    id: "Hamile Kaçış",
+    emotions: ["korku", "koruma", "kacıs gerilimi", "guclu donus"],
+    thoughts: ["Onu korumaliyim.", "Burada guvende degilim.", "Donunce hesap soracagim."],
+    ladder: "hamilelik riski → kacis → guclenme → donus (cocuk sahnede yok)",
+    visuals: ["gece kacisi", "guvenli ev", "yuzlesme"],
+    priority: 2,
+    adultSafe: true,
+  },
+  {
+    id: "Gelin Değişimi",
+    emotions: ["kimlik karisikligi", "aldatilma", "ask veya intikam"],
+    thoughts: ["Ben o degilim.", "Seni baska sanmistin.", "Simdi gercek yuzum."],
+    ladder: "degisim → evlilik → sir → yuzlesme",
+    visuals: ["duvak", "yanlis kimlik", "acilis"],
+    priority: 2,
+    adultSafe: true,
+  },
+  {
+    id: "Yanlış Kimlik",
+    emotions: ["gizleme gerilimi", "yakinlasma", "ifsanin soku"],
+    thoughts: ["Adim yalan.", "Seni seviyorum ama yalanim var.", "Ogrenirse gider."],
+    ladder: "yanlis kimlik → bag → ifsa riski → itiraf",
+    visuals: ["sahte kartvizit", "cift hayat", "yuzlesme"],
+    priority: 1,
+    adultSafe: true,
+  },
+  {
+    id: "Kayıp Ailesini Arama",
+    emotions: ["ozlem", "hafiza boslugu", "kavusma / ihanet"],
+    thoughts: ["Kimim ben?", "Ailem beni sattı mi?", "Geri donunce ne diyecegim?"],
+    ladder: "kayip → arama → bulusma → gercek (iyi veya kotu)",
+    visuals: ["eski foto", "kapi oni kavusma", "sir dosyasi"],
+    priority: 2,
+    adultSafe: true,
+  },
+  {
+    id: "Hafıza Kaybı",
+    emotions: ["bosluk", "guvensizlik", "yeniden ogrenme", "eski yaralar"],
+    thoughts: ["Seni tanimiyorum.", "Neden gozum doluyor?", "Gecmisim beni yiyor."],
+    ladder: "kaza/hafiza kaybi → yeni hayat → ipuclari → hatirlama",
+    visuals: ["hastane uyanisi", "bos bakis", "ani flash"],
+    priority: 2,
+    adultSafe: true,
+  },
+  {
+    id: "Mafya",
+    emotions: ["tehlike", "koruma", "karanlik ask", "sadakat sinavi"],
+    thoughts: ["Bu dunya kirli.", "Seni koruyacagim.", "Ihanet olursa kan degil, hesap."],
+    ladder: "giris → tehlike → bag → ihanet/sadakat → kapanis",
+    visuals: ["karanlik araba", "kulup", "koruma halkasi"],
+    priority: 2,
+    adultSafe: true,
+  },
+  {
+    id: "Fantastik",
+    emotions: ["hayret", "guc aciligi", "kader"],
+    thoughts: ["Bu sistem gercek mi?", "Gucum var artik.", "Bedeli ne?"],
+    ladder: "uyanis → gorev → dusman → zafer bedeli",
+    visuals: ["sistem paneli (okunur yazi yok — isik)", "guc ani"],
+    priority: 3,
+    adultSafe: true,
+  },
+  {
+    id: "Fantastik Aşk",
+    emotions: ["buyu + ask", "yasak bag", "bedel korkusu"],
+    thoughts: ["Seni sevmek lanet mi?", "Bedeli odemeye deger.", "Insan mi canavar mi?"],
+    ladder: "fantastik karsilasma → bag → bedel → secim",
+    visuals: ["buyulu mekan", "donusum ipucu", "veda/secim"],
+    priority: 3,
+    adultSafe: true,
+  },
+  {
+    id: "Kurtadam",
+    emotions: ["yabanci olma", "alfa baskisi", "es bagı", "asagilanmadan donus"],
+    thoughts: ["Donusemedigim icin ezildim.", "Gucum uyandi.", "Simdi diz cokun."],
+    ladder: "asagilanma → kacis → guc uyanisi → ritüelde hesap",
+    visuals: ["orman", "rituel", "alfa yuzlesme"],
+    priority: 3,
+    adultSafe: true,
+  },
+  {
+    id: "Doğu Fantastiği",
+    emotions: ["ihanet", "kılıc gururu", "olumsuz intikam"],
+    thoughts: ["Tahta cikardim, beni idama gonderdi.", "Olmeyecegim.", "Hesap alemler otesi."],
+    ladder: "sadakat → ihanet → kurtulus → kanli yuruyus (sansursuz siddet abartma)",
+    visuals: ["infaz alani", "kilic", "saray"],
+    priority: 3,
+    adultSafe: true,
+  },
+  {
+    id: "Saray Entrikaları",
+    emotions: ["komplo", "guvensizlik", "taht aciligi"],
+    thoughts: ["Her gulumseme yalan.", "Taht beni yutacak.", "Once hayatta kal."],
+    ladder: "saraya giris → entrika → dusus/yukselis → hesap",
+    visuals: ["saray koridoru", "zehir imasi", "taht"],
+    priority: 3,
+    adultSafe: true,
+  },
+  {
+    id: "Ters Harem",
+    emotions: ["secilme baskisi", "coklu cekim", "hayatta kalma"],
+    thoughts: ["Hepsi beni istiyor ama neden?", "Bu oyunda olmemeliyim.", "Kalbi kime verecegim?"],
+    ladder: "uyanıs kotu rolde → cellat/asiklar → tuzak → secim",
+    visuals: ["saray", "dort yakin muhafiz", "tuzak"],
+    priority: 3,
+    adultSafe: true,
+  },
+  {
+    id: "Gerilim",
+    emotions: ["zaman baskisi", "tehlike", "nefes tutma"],
+    thoughts: ["Kac dakikam var?", "Kim arkamda?", "Bir hata yeter."],
+    ladder: "tehlike → kovalama → twist → yuzlesme",
+    visuals: ["karanlik koridor", "telefon", "kapi"],
+    priority: 2,
+    adultSafe: true,
+  },
+  {
+    id: "Korku Gerilim",
+    emotions: ["tekinsizlik", "sir korkusu", "insan skandali"],
+    thoughts: ["Bu ev konusuyor.", "Sir aileden.", "Kapiyi kilitleyip gidecegim."],
+    ladder: "tekinsiz isaret → sir → insan yuzu → kapanis",
+    visuals: ["eski ev", "golge", "acilan sir"],
+    priority: 2,
+    adultSafe: true,
+  },
+  {
+    id: "Kampüs Aşkı",
+    emotions: ["genclik", "ezilme", "donus"],
+    thoughts: ["(URETIMDE KULLANMA — 18 alti riski)"],
+    ladder: "kullanma — yetiskin ofis/sehir muadiline cevir",
+    visuals: [],
+    priority: 3,
+    adultSafe: false,
+  },
+  {
+    id: "Okul",
+    emotions: ["(URETIMDE KULLANMA)"],
+    thoughts: ["Yetiskin cevreye cevir."],
+    ladder: "yasak — 18 alti",
+    visuals: [],
+    priority: 3,
+    adultSafe: false,
+  },
+] as const;
+
+export function netShortGenreById(name: string): NetShortGenreProfile | undefined {
+  const n = name.replace(/\s+/g, " ").trim().toLowerCase();
+  return NETSHORT_GENRE_ATLAS.find((g) => g.id.toLowerCase() === n);
+}
+
+export function netShortAdultSafeGenres(): NetShortGenreProfile[] {
+  return NETSHORT_GENRE_ATLAS.filter((g) => g.adultSafe && g.priority <= 2);
+}
+
+/** Hikaye promptuna yapisan atlas ozeti. */
+export const NETSHORT_GENRE_ATLAS_LOCK = [
+  "NETSHORT TUR ATLASI (all-plots sayfalarindan — duygu/dusunce kaydi):",
+  "Hikaye uretirken asağıdaki turlerden 1-2'sini sec; o turun emotions + thoughts + ladder ruhunu tasi.",
+  "ONCELIKLI (bizim filmler): Hesap Sorma, Zorlu Geri Kazanis, Guclu Donus, Intikam, Pismanlik, Gizli Kimlik, Modern Ask, Ask ve Evlilik, Sozlesmeli Ask, Ask Ucgeni, Zengin Aile Drami, Beklenmedik Donus, Kadin Gelisimi, Ofis Aksiyon, Servet Mucadelesi, Yanlis Kimlik.",
+  "Her secilen tur icin: emotions'i yuzde/goste, thoughts'u birinci tekilde ic ses gibi hissettir (etiket yazma), ladder'i olay sirasina cevir.",
+  "YASAK etiketleri hikayeye cocuk/okul olarak tasima: Kampus Aski, Okul. Fantastik/Kurtadam/Saray istege bagli — modern sehir versiyonuna cevirebilirsin.",
+  "Atlas ornek dusunce ruhu: 'Kalem kalem odeyeceksin.' / 'Geri getiremezsin.' / 'Kim oldugumu bilmiyorsun.' / 'Bu bebek senin degil.' / 'Maskeyi yirtiyorum.'",
+].join(" ");
+
+export function formatNetShortGenreAtlasForPrompt(maxGenres = 12): string {
+  const picks = netShortAdultSafeGenres()
+    .filter((g) => g.priority === 1)
+    .slice(0, maxGenres);
+  return picks
+    .map(
+      (g) =>
+        `[${g.id}] duygu: ${g.emotions.join(", ")} | dusunce ruhu: ${g.thoughts.slice(0, 2).join(" / ")} | merdiven: ${g.ladder}`
+    )
+    .join("\n");
+}

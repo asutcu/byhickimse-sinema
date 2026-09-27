@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: byhickimse-sinema-studyosu
+    env: docker
+    plan: free
+    healthCheckPath: /
+    envVars:
+      - key: PORT
+        value: 3333
+      - key: DATABASE_URL
+        value: "file:./dev.db"
+    disk:
+      name: app-data
+      mountPath: /app/projects
+      sizeGB: 5
