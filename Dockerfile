@@ -1,9 +1,7 @@
 # Dockerfile for Narratif - ByHickimse Sinema Stüdyosu
 FROM node:22-bookworm
 
-# Environment variables for build & runtime
-ENV NODE_ENV=production
-ENV PORT=3333
+# Build-time environment variables
 ENV DATABASE_URL="file:./dev.db"
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV NODE_OPTIONS="--max-old-space-size=2048"
@@ -57,17 +55,21 @@ WORKDIR /app
 COPY package*.json ./
 COPY prisma ./prisma/
 
-# Install dependencies
-RUN npm ci
+# Install ALL dependencies (including devDependencies like typescript and tailwindcss)
+RUN npm install --include=dev
 
-# Copy project source
+# Copy project source code
 COPY . .
 
-# Generate Prisma client and initialize SQLite database before Next.js static page generation
+# Generate Prisma Client and initialize SQLite database for static pages
 RUN npx prisma generate && npx prisma db push
 
 # Build Next.js application
 RUN npm run build
+
+# Set runtime environment
+ENV NODE_ENV=production
+ENV PORT=3333
 
 EXPOSE 3333
 
